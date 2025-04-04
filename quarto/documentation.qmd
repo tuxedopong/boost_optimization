@@ -1,7 +1,7 @@
 ---
 title: "Marketplace Boost Optimization Engine"
 author: "Felipe Osorio"
-date: "March 17, 2025"
+date: "April 4, 2025"
 format: 
   revealjs:
     incremental: false
@@ -20,11 +20,11 @@ metros_top6 = c("Orlando Metro", "DFW", "Sacramento Metro", "Greensboro Metro", 
 
 ## The Problem
 
-The current strategy of augmenting base fares with incentives ("boosts") is inefficient on two fronts:
+The current strategy of augmenting base fares with incentives is inefficient on two fronts:
 
--   It costs us valuable time to manually intervene in the scheduled trips marketplace
+-   It costs our teams valuable time to manually intervene in the marketplace, AKA "boosting"
 
--   Boosting trips is expensive, and as we try to guarantee every ride, they get additional increments near the pick-up window if they remain unclaimed
+-   Boosting trips is expensive! As we try to guarantee every ride, costs accumulate on unclaimed rides leading up to the scheduled trip
 
 ## The Problem (don't panic)
 
@@ -39,75 +39,70 @@ ggplot(df_boosted, aes(x=time_between_boost_scheduled_h*-1, y = single_boost_amo
 
 ## The Problem, quantified
 
-In 2024, 11,800 boosts were applied from May-August
+**In 2024, we applied 11,800 boosts from May-August**
 
--   Let's assume each intervention takes just six minutes to identify, price out, decide on, and execute
-
-<!-- -->
-
--   Including those that receive a zero cent value...
-
--   **In May, applying 7,135 boosts required 700+ people-hours that should ideally be spent elsewhere**
+-   Let's suppose each intervention takes just six minutes to identify, price out, decide on, and execute
+    -   Assuming boosting isn't yet automated, and including "zero cent" boosts
+-   **In May alone, we needed 700+ people-hours for 7,135 boosts that could have been spent elsewhere**
 
 We can do better than that!
 
-## The Problem, quantified
+## The Problem, quantified (\$)
 
-**In 2024, 42.7% of completed trips (17,500) needed a boost**
+**In 2024, we boosted 42.7% of all completed trips (17,500)**
 
--   Between May - August, we paid out \$430k to drivers
+-   Between May - August, the company paid out \$430k to drivers
 
--   The avg. trip was 21 minutes, and the avg. fare \$25
+-   The avg. trip was 21 minutes; avg. fare was \$25
 
--   During that period, we spent \$92k on boosting (21% of fares)
+-   We spent \$92k on boosting, or \$5.27 per trip (21% of fares)
 
 -   **Boosts made up over a fifth of total fares paid to drivers**
 
-That's \$280k in annualized spend, under the status quo
+That's \$280k in annualized boost spend, under the status quo
 
 ## The Data
 
 ```{r}
-ggplot(df_clean, aes(x=dollars_paid_to_driver)) + geom_histogram() + xlab("Fare paid to driver ($)") + facet_wrap(~origin_metro_area_name, scales="free_y")
+ggplot(df_clean, aes(x=dollars_paid_to_driver)) + geom_histogram() + xlab("Fare paid to driver ($)") + facet_wrap(~origin_metro_area_name, scales="free_y") + ggtitle("Not all metros are created equal")
 ```
 
-#### Histogram of fares paid to drivers, by origin metro area
+#### Histograms of fares paid to drivers, by origin metro area
 
 ## The Data
 
-If you look closely at the timeline of driver claims versus their trips' scheduled start times, things start to get messy...
+Looking closely at the timeline of driver claims versus trips' scheduled start...
 
 ```{r}
 ggplot(df_clean, aes(x=time_between_claimed_scheduled_h*-1)) + geom_histogram() + xlab("Time between a claimed trip and its scheduled start, in hours")
 ```
 
--   Many trips are claimed weeks in advance, but some only days or even hours before. About a third (33.2%) of trips remain unclaimed an hour before pick-up!
+-   Many trips are claimed weeks in advance, but some just days or hours before. A third (33.2%) of trips remain unclaimed an hour before pick-up!
 
 ## The Data (features)
 
-In addition to fares, boosts, claims, and scheduled ride times, we've also collected information on:
+We know **fares, boosts, claimed/scheduled ride times**, and have also collected information on:
 
--   Peak traffic hours
+-   **Peak traffic hours**
 
--   Total predicted trip distance & duration
+-   **Total predicted trip distance & duration**
 
--   Boosts expressed as a percentage of driver fare
+-   **Boosts expressed as a percentage of fares**
 
--   Count of trips by origin metro area, monthly (demand proxy)
+-   **Count of trips by origin metro area**, monthly (demand proxy)
 
--   Average commute time to pick-up by metro area, also monthly (traffic/sparsity proxy)
+-   **Average commute time to pick-up by metro area**, also monthly (sparsity proxy)
 
 ## Behold, a solution: Identifying high-risk rides early
 
 My solution involves using a predictive model to automatically flag rides days in advance, particularly those at risk of needing a last-minute intervention
 
--   We must know whether the requisite data are available well in advance of each trip's scheduled start
-
-If we can probabilistically identify rides that are most likely to remain unclaimed at the eleventh hour, we can promote them on the platform early – and time is money.
+-   **Key Question:** will the requisite data become available ahead of each trip's scheduled date?
+-   If we can probabilistically identify rides that are most likely to remain unclaimed until late, we can promote them on the platform early – saving on last-minute boosting.
 
 ## A model-based approach to the business problem
 
-In developing a model, our high-level goals include:
+In developing a model, we have three high-level strategic goals:
 
 -   **Reducing** the manual workload on boost ops teams as much as possible
 -   **Maintaining** the high standard of scheduled trip reliability and guaranteed rides
@@ -115,11 +110,11 @@ In developing a model, our high-level goals include:
 
 ## A model-based approach to the business problem
 
-We fit a model to measure the extent to which our data points influence each claimed trip's timeline
-
--   Specifically, how is each feature associated with the number of hours until a scheduled ride gets claimed?
+I fit a predictive model to measure the extent to which our data inputs influenced each claimed trip's timeline
 
 -   Let's start with a relatively simple linear model (GLM)
+
+-   Specifically, what is the relationship between our features and the time between a trip getting claimed relative to its scheduled start, in hours?
 
 ## The Model: How the sausage is made
 
@@ -128,7 +123,7 @@ source('../r/03_fit_toy_model.R')
 ## Honestly not a great fit, but it's a good start!
 ```
 
-## The Model: Technical detour
+## The Model: A technical detour
 
 ```{r}
 ggplot(df_clean, aes(x = residuals)) + geom_histogram(bins = 30) + xlab("Residuals") + ylab("")
@@ -136,39 +131,39 @@ ggplot(df_clean, aes(x = residuals)) + geom_histogram(bins = 30) + xlab("Residua
 
 #### Residuals Plot (observed - predicted values)
 
-## The Model: Technical detour
+## The Model: A technical detour
 
-On the positive side, the residuals are centered on zero
+-   On the plus side, residuals are centered on zero (mu = 0.003)
 
-Yet, we observe an asymmetric distribution of residuals and a high standard deviation among them (sd = 149 h), suggesting distributional assumptions are not holding up
+-   Yet, we observe an asymmetric distribution and a high standard deviation among residuals (sd = 149 h), suggesting distributional assumptions are not holding up
 
-In brief, our toy model's fit and performance leave much to be desired
+-   In brief, my toy model's fit and performance leave much to be desired
 
-## The Model: Technical detour
+## The Model: A technical detour
 
 ```{r}
 ggplot(df_clean, aes(x=log1p(time_between_claimed_scheduled_h))) + geom_histogram() + xlab("Time between a claimed trip and its scheduled start, log hours")
 ```
 
--   During the modeling phase, we specified a log link function for the outcome variable
+-   During the modeling phase, I specified a log link function for the outcome variable
 
--   This was insufficient to accommodate the degree of non-normality, evidenced by the right-skew
+-   It was insufficient to accommodate this degree of non-normality, evidenced by the right-skew
 
-## The Model: Technical detour
+## The Model: A technical detour
 
 -   A modeling approach requires an understanding of the data-generating process, defining and checking for the influence of outliers, and iterating on the implementation details
 
--   If this were a real product, we'd consider either:
+-   If this were a real deliverable, we would consider:
 
-    -   A different family of continuous distributions to model the problem
+    -   A different family of continuous distributions to model the problem, or
 
-    -   An alternative outcome for a logistic model: e.g. binary response predicting high vs. low risk trips
+    -   A binary outcome for a logistic model: e.g. binary classification predicting high vs. low risk trips
 
--   Another idea: a zero-inflated negative binomial distribution could better capture the high frequency of last-minute claimed trips
+-   For example, a zero-inflated negative binomial distribution could better capture the high frequency of last-minute claimed trips
 
 ## Interpreting model results
 
-Despite our toy model's shortcomings, the framework remains useful for making actionable recommendations. Controlling for all other inputs, and all else being equal, several insights:
+Despite the toy model's shortcomings, this framework remains useful for making actionable recommendations. Controlling for the input variables, and all else being equal, some insights:
 
 -   Longer rides are likely to get claimed earlier
 
@@ -176,11 +171,11 @@ Despite our toy model's shortcomings, the framework remains useful for making ac
 
 -   High boosts (by % of fare) are strongly associated with late trip claims
 
--   Both geo-based indicators of monthly rides & commute times are modestly associated with later claims
+-   Both geographic-level features tracking monthly rides & commute times are modestly associated with later claims
 
 ## Toy model deployment
 
-**If we were** **satisfied** with model fit and diagnostics, we'd work on deploying it with the MLOps team, keeping these principles in mind:
+If we were satisfied with model fit and diagnostics, I'd work on deploying it with the MLOps team, with the following principles in mind:
 
 -   **Modularity**: each component of the modeling pipeline should be easy to maintain/improve
 -   **Efficiency**: minimize tech debt, ci/cd build times, and model run-time for scaling out
@@ -191,60 +186,60 @@ Despite our toy model's shortcomings, the framework remains useful for making ac
 
 Embracing a hybrid predictive and prescriptive framework, my business recommendations include:
 
--   Incentivizing drivers early with a probabilistic, automated boosting system, leveraging the model
--   Offering incentives as a percentage of total fare, to minimize the need for incremental boosts
--   Making boosts proportional to trips' predicted risk of remaining unclaimed on each day
+-   **Incentivizing drivers early** with a probabilistic, automated boosting system, leveraging the model
+-   **Offering** **boosts as a percentage of total fare**, to minimize the need for incremental boosts
+-   Making incentives proportional to trips' predicted risk of remaining unclaimed until late
 
 ## Bottom-line Recommendations (pt. 2)
 
 Following a recommendations testing framework, we should also consider:
 
--   Highlighting above-average boosts in the app when they're offered days in advance
--   Adding an "early claim" bonus for drivers, e.g. every five rides claimed 6+ hours early
--   Designing a set of experiments to understand how all the proposed changes might interact
+-   **Highlighting above-average boosts** in the app when they're offered days in advance
+-   **Adding an "early claim" bonus** for drivers, e.g. every five rides claimed 8+ hours early
+-   **Designing a set of experiments** to understand how all our proposed changes will interact
 
 ## Business Impact (if you read 1 slide)
 
--   Last-minute boosting costs the business \$5.27 per trip
+-   **Same-day boosting costs the business \$5.27 per trip**, on average
 
-    -   A quarter of boosts (\$\$) happen within an hour of pick-up!
+    -   A quarter of boosts (\$\$) happen within an hour of the pick-up window!
 
--   Using predictive modeling, we can identify rides that may be left unclaimed many days in advance
+-   Using predictive modeling, **we can identify rides that might be left unclaimed** weeks in advance
 
--   Automating early boosting for these trips will save the business time and money
+-   **Automating early boosting for these trips will save the business time and money**
 
-    -   A modest 19% reduction in boost spend will save us \$53k/yr (of \$280k total fares)
+    -   A modest 19% reduction in average boost spend works out to \$53k/yr (of \$280k in boosts)
 
-    -   Put another way, an average boost reduction of \$1 per \$25 trip saves us 4% on every fare
+    -   Put another way, **a boost reduction of \$1 per \$25 trip saves us 4% on every fare**
 
 ## If only we had more data...
 
 While this is fine for a POC, we could really use more data:
 
--   More trips – we're clearly working with a small sample here
--   Competitive pricing benchmarks from other transportation networks, by metro area
--   Twelve or more months of historical data for seasonality & cyclicality estimates
--   Canceled and rescheduled trips (or those we couldn't guarantee), another form of risk
--   A detailed history of "unclaimed trip" events, so that we can predict those too
+-   **More trips** – we're clearly working with a small sample here
+-   Competitive **pricing benchmarks** from other transportation networks, by metro area
+-   Twelve or more months of **historical data for seasonality** & cyclicality estimates
+-   **Canceled and rescheduled trips** (or those we couldn't guarantee), another form of risk
+-   A more detailed history of "unclaimed trip" events, so that we can predict those too
 
 ## Limitations (information horizon)
 
-Data aren't the only limiting factor. My approach comes with a set of key assumptions:
+Data aren't the only limiting factor. My approach makes several key assumptions:
 
--   The framework assumes each input would be present early enough so that the information would make a difference for the business, long before manual boosts kick in
+-   The framework **assumes data inputs would be available early enough for the information to make a difference** for the business, well before same-day boost ops kicks in
 
--   We're assuming we know how much the driver will be paid ahead of time. Also, if the trip length/duration predictions shift, it could systematically impact model results
+-   We're assuming knowledge on fares paid to drivers ahead of time. Shifts in the predicted trip length/duration could systematically impact model results
 
--   YMMV: we need a way to quantify and track the real value-add for the business once implementated
+-   **YMMV**: we need a way to quantify and track the value-add for the business once implementated
 
 ## Limitations ("out-of-sample")
 
--   We've operated based on within-sample data, and need to understand how well results might generalize
+-   We've operated based on "within-sample" data, and want to understand how well results would generalize to other times of the year, metro areas, and future trips in general
 
-    -   We should run K-fold cross validation (e.g. 10 splits), ideally with a full year's worth of data
+    -   We can run K-fold cross validation (e.g. 10 splits), ideally with a full year's worth of data
 
 -   We should develop an A/B testing framework for comparing boost optimization and other incentive-based strategies
 
--   In the future, we may consider a time-to-event (i.e. survival analysis) or zero-inflated overdispersion model, such as a negative binomial HLM (using `rstan`) to predict trips
+-   In the future, we may consider a time-to-event (i.e. survival analysis) or zero-inflated overdispersion model, such as a negative binomial HLM (using `rstan`) to predict trip claims
 
 ## 
