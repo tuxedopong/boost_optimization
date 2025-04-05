@@ -341,10 +341,10 @@ Felipe Osorio
 </section>
 <section id="the-problem" class="slide level2">
 <h2>The Problem</h2>
-<p>The current strategy of augmenting base fares with incentives (“boosts”) is inefficient on two fronts:</p>
+<p>The current strategy of augmenting base fares with incentives is inefficient on two fronts:</p>
 <ul>
-<li><p>It costs our teams valuable time to manually intervene in the marketplace</p></li>
-<li><p>Boosting trips is expensive! We try to guarantee every ride, meaning we see additional boosts on unclaimed rides leading up to the scheduled trip</p></li>
+<li><p>It costs our teams valuable time to manually intervene in the marketplace, AKA “boosting”</p></li>
+<li><p>Boosting trips is expensive! As we try to guarantee every ride, costs accumulate on unclaimed rides leading up to the scheduled trip</p></li>
 </ul>
 </section>
 <section id="the-problem-dont-panic" class="slide level2">
@@ -353,23 +353,23 @@ Felipe Osorio
 <img data-src="documentation_files/figure-revealjs/unnamed-chunk-1-1.png" width="960" class="r-stretch"></section>
 <section id="the-problem-quantified" class="slide level2">
 <h2>The Problem, quantified</h2>
-<p><strong>In 2024, 11,800 boosts were applied from May-August</strong></p>
+<p><strong>In 2024, we applied 11,800 boosts from May-August</strong></p>
 <ul>
-<li>Let’s assume each intervention takes just six minutes to identify, price out, decide on, and execute
+<li>Let’s suppose each intervention takes just six minutes to identify, price out, decide on, and execute
 <ul>
 <li>Assuming boosting isn’t yet automated, and including “zero cent” boosts</li>
 </ul></li>
-<li><strong>In May alone, we spent 700+ people-hours applying 7,135 boosts that could have been dedicated elsewhere</strong></li>
+<li><strong>In May alone, we needed 700+ people-hours for 7,135 boosts that could have been spent elsewhere</strong></li>
 </ul>
 <p>We can do better than that!</p>
 </section>
 <section id="the-problem-quantified-1" class="slide level2">
 <h2>The Problem, quantified ($)</h2>
-<p><strong>In 2024, 42.7% of all completed trips (17,500) were boosted</strong></p>
+<p><strong>In 2024, we boosted 42.7% of all completed trips (17,500)</strong></p>
 <ul>
-<li><p>Between May - August, we paid out $430k to drivers</p></li>
-<li><p>The avg. trip was 21 minutes, and the avg. fare $25</p></li>
-<li><p>We spent $92k on boosting (21% of fares), or $5.27 per trip</p></li>
+<li><p>Between May - August, the company paid out $430k to drivers</p></li>
+<li><p>The avg. trip was 21 minutes; avg. fare was $25</p></li>
+<li><p>We spent $92k on boosting, or $5.27 per trip (21% of fares)</p></li>
 <li><p><strong>Boosts made up over a fifth of total fares paid to drivers</strong></p></li>
 </ul>
 <p>That’s $280k in annualized boost spend, under the status quo</p>
@@ -377,38 +377,38 @@ Felipe Osorio
 <section id="the-data" class="slide level2">
 <h2>The Data</h2>
 
-<img data-src="documentation_files/figure-revealjs/unnamed-chunk-2-1.png" width="960" class="r-stretch"><h4 id="histogram-of-fares-paid-to-drivers-by-origin-metro-area">Histogram of fares paid to drivers, by origin metro area</h4>
+<img data-src="documentation_files/figure-revealjs/unnamed-chunk-2-1.png" width="960" class="r-stretch"><h4 id="histograms-of-fares-paid-to-drivers-by-origin-metro-area">Histograms of fares paid to drivers, by origin metro area</h4>
 </section>
 <section id="the-data-1" class="slide level2">
 <h2>The Data</h2>
-<p>If you look closely at the timeline of driver claims versus their trips’ scheduled start times, things start to get messy…</p>
+<p>Looking closely at the timeline of driver claims versus trips’ scheduled start…</p>
 
 <img data-src="documentation_files/figure-revealjs/unnamed-chunk-3-1.png" width="960" class="r-stretch"><ul>
-<li>Many trips are claimed weeks in advance, but some only days or even hours before. About a third (33.2%) of trips remain unclaimed an hour before pick-up!</li>
+<li>Many trips are claimed weeks in advance, but some just days or hours before. A third (33.2%) of trips remain unclaimed an hour before pick-up!</li>
 </ul>
 </section>
 <section id="the-data-features" class="slide level2">
 <h2>The Data (features)</h2>
 <p>We know <strong>fares, boosts, claimed/scheduled ride times</strong>, and have also collected information on:</p>
 <ul>
-<li><p>Peak traffic hours</p></li>
-<li><p>Total predicted trip distance &amp; duration</p></li>
-<li><p>Boosts expressed as a percentage of driver fare</p></li>
-<li><p>Count of trips by origin metro area, monthly (demand proxy)</p></li>
-<li><p>Average commute time to pick-up by metro area, also monthly (sparsity proxy)</p></li>
+<li><p><strong>Peak traffic hours</strong></p></li>
+<li><p><strong>Total predicted trip distance &amp; duration</strong></p></li>
+<li><p><strong>Boosts expressed as a percentage of fares</strong></p></li>
+<li><p><strong>Count of trips by origin metro area</strong>, monthly (demand proxy)</p></li>
+<li><p><strong>Average commute time to pick-up by metro area</strong>, also monthly (sparsity proxy)</p></li>
 </ul>
 </section>
 <section id="behold-a-solution-identifying-high-risk-rides-early" class="slide level2">
 <h2>Behold, a solution: Identifying high-risk rides early</h2>
 <p>My solution involves using a predictive model to automatically flag rides days in advance, particularly those at risk of needing a last-minute intervention</p>
 <ul>
-<li><strong>Key Question:</strong> will the requisite data become available well ahead of each trip’s scheduled date?</li>
-<li>If we can probabilistically identify rides that are most likely to remain unclaimed at the eleventh hour, we can promote them on the platform early – and save on last-minute boosting.</li>
+<li><strong>Key Question:</strong> will the requisite data become available ahead of each trip’s scheduled date?</li>
+<li>If we can probabilistically identify rides that are most likely to remain unclaimed until late, we can promote them on the platform early – saving on last-minute boosting.</li>
 </ul>
 </section>
 <section id="a-model-based-approach-to-the-business-problem" class="slide level2">
 <h2>A model-based approach to the business problem</h2>
-<p>In developing a model, we have three high-level goals:</p>
+<p>In developing a model, we have three high-level strategic goals:</p>
 <ul>
 <li><strong>Reducing</strong> the manual workload on boost ops teams as much as possible</li>
 <li><strong>Maintaining</strong> the high standard of scheduled trip reliability and guaranteed rides</li>
@@ -417,10 +417,10 @@ Felipe Osorio
 </section>
 <section id="a-model-based-approach-to-the-business-problem-1" class="slide level2">
 <h2>A model-based approach to the business problem</h2>
-<p>I fit a model to measure the extent to which our data points influence each claimed trip’s timeline</p>
+<p>I fit a predictive model to measure the extent to which our data inputs influenced each claimed trip’s timeline</p>
 <ul>
-<li><p>Specifically, how is each feature associated with the number of hours until a scheduled ride gets claimed?</p></li>
 <li><p>Let’s start with a relatively simple linear model (GLM)</p></li>
+<li><p>Specifically, what is the relationship between our features and the time between a trip getting claimed relative to its scheduled start, in hours?</p></li>
 </ul>
 </section>
 <section id="the-model-how-the-sausage-is-made" class="slide level2">
@@ -464,7 +464,7 @@ Residual Deviance: 388200000    AIC: 224600
 <section id="the-model-a-technical-detour-1" class="slide level2">
 <h2>The Model: A technical detour</h2>
 <ul>
-<li><p>On the positive side, residuals are centered on zero</p></li>
+<li><p>On the plus side, residuals are centered on zero (mu = 0.003)</p></li>
 <li><p>Yet, we observe an asymmetric distribution and a high standard deviation among residuals (sd = 149 h), suggesting distributional assumptions are not holding up</p></li>
 <li><p>In brief, my toy model’s fit and performance leave much to be desired</p></li>
 </ul>
@@ -474,17 +474,17 @@ Residual Deviance: 388200000    AIC: 224600
 
 <img data-src="documentation_files/figure-revealjs/unnamed-chunk-6-1.png" width="960" class="r-stretch"><ul>
 <li><p>During the modeling phase, I specified a log link function for the outcome variable</p></li>
-<li><p>This was insufficient to accommodate the degree of non-normality, evidenced by the right-skew</p></li>
+<li><p>It was insufficient to accommodate this degree of non-normality, evidenced by the right-skew</p></li>
 </ul>
 </section>
 <section id="the-model-a-technical-detour-3" class="slide level2">
 <h2>The Model: A technical detour</h2>
 <ul>
 <li><p>A modeling approach requires an understanding of the data-generating process, defining and checking for the influence of outliers, and iterating on the implementation details</p></li>
-<li><p>If this were a real product, we may consider:</p>
+<li><p>If this were a real deliverable, we would consider:</p>
 <ul>
 <li><p>A different family of continuous distributions to model the problem, or</p></li>
-<li><p>An alternative outcome for a logistic model: e.g.&nbsp;binary response predicting high vs.&nbsp;low risk trips</p></li>
+<li><p>A binary outcome for a logistic model: e.g.&nbsp;binary classification predicting high vs.&nbsp;low risk trips</p></li>
 </ul></li>
 <li><p>For example, a zero-inflated negative binomial distribution could better capture the high frequency of last-minute claimed trips</p></li>
 </ul>
@@ -501,7 +501,7 @@ Residual Deviance: 388200000    AIC: 224600
 </section>
 <section id="toy-model-deployment" class="slide level2">
 <h2>Toy model deployment</h2>
-<p><strong>If we were</strong> <strong>satisfied</strong> with model fit and diagnostics, I’d work on deploying it with the MLOps team, keeping these principles in mind:</p>
+<p>If we were satisfied with model fit and diagnostics, I’d work on deploying it with the MLOps team, with the following principles in mind:</p>
 <ul>
 <li><strong>Modularity</strong>: each component of the modeling pipeline should be easy to maintain/improve</li>
 <li><strong>Efficiency</strong>: minimize tech debt, ci/cd build times, and model run-time for scaling out</li>
@@ -513,32 +513,32 @@ Residual Deviance: 388200000    AIC: 224600
 <h2>Bottom-line Recommendations (pt.&nbsp;1)</h2>
 <p>Embracing a hybrid predictive and prescriptive framework, my business recommendations include:</p>
 <ul>
-<li>Incentivizing drivers early with a probabilistic, automated boosting system, leveraging the model</li>
-<li>Offering incentives as a percentage of total fare, to minimize the need for incremental boosts</li>
-<li>Making boosts proportional to trips’ predicted risk of remaining unclaimed on each day</li>
+<li><strong>Incentivizing drivers early</strong> with a probabilistic, automated boosting system, leveraging the model</li>
+<li><strong>Offering</strong> <strong>boosts as a percentage of total fare</strong>, to minimize the need for incremental boosts</li>
+<li>Making incentives proportional to trips’ predicted risk of remaining unclaimed until late</li>
 </ul>
 </section>
 <section id="bottom-line-recommendations-pt.-2" class="slide level2">
 <h2>Bottom-line Recommendations (pt.&nbsp;2)</h2>
 <p>Following a recommendations testing framework, we should also consider:</p>
 <ul>
-<li>Highlighting above-average boosts in the app when they’re offered days in advance</li>
-<li>Adding an “early claim” bonus for drivers, e.g.&nbsp;every five rides claimed 6+ hours early</li>
-<li>Designing a set of experiments to understand how all the proposed changes might interact</li>
+<li><strong>Highlighting above-average boosts</strong> in the app when they’re offered days in advance</li>
+<li><strong>Adding an “early claim” bonus</strong> for drivers, e.g.&nbsp;every five rides claimed 8+ hours early</li>
+<li><strong>Designing a set of experiments</strong> to understand how all our proposed changes will interact</li>
 </ul>
 </section>
 <section id="business-impact-if-you-read-1-slide" class="slide level2">
 <h2>Business Impact (if you read 1 slide)</h2>
 <ul>
-<li><p>Same-day boosting costs the business $5.27 per trip, on average</p>
+<li><p><strong>Same-day boosting costs the business $5.27 per trip</strong>, on average</p>
 <ul>
 <li>A quarter of boosts ($$) happen within an hour of the pick-up window!</li>
 </ul></li>
-<li><p>Using predictive modeling, we can identify rides that might be left unclaimed weeks in advance</p></li>
-<li><p>Automating early boosting for these trips will save the business time and money</p>
+<li><p>Using predictive modeling, <strong>we can identify rides that might be left unclaimed</strong> weeks in advance</p></li>
+<li><p><strong>Automating early boosting for these trips will save the business time and money</strong></p>
 <ul>
 <li><p>A modest 19% reduction in average boost spend works out to $53k/yr (of $280k in boosts)</p></li>
-<li><p>Put another way, a boost reduction of $1 per $25 trip saves us 4% on every fare</p></li>
+<li><p>Put another way, <strong>a boost reduction of $1 per $25 trip saves us 4% on every fare</strong></p></li>
 </ul></li>
 </ul>
 </section>
@@ -557,9 +557,9 @@ Residual Deviance: 388200000    AIC: 224600
 <h2>Limitations (information horizon)</h2>
 <p>Data aren’t the only limiting factor. My approach makes several key assumptions:</p>
 <ul>
-<li><p>My framework assumes data inputs would be available early enough for the information to make a difference for the business, long before same-day boost ops kicks in</p></li>
+<li><p>The framework <strong>assumes data inputs would be available early enough for the information to make a difference</strong> for the business, well before same-day boost ops kicks in</p></li>
 <li><p>We’re assuming knowledge on fares paid to drivers ahead of time. Shifts in the predicted trip length/duration could systematically impact model results</p></li>
-<li><p>YMMV: we need a way to quantify and track the value-add for the business once implementated</p></li>
+<li><p><strong>YMMV</strong>: we need a way to quantify and track the value-add for the business once implementated</p></li>
 </ul>
 </section>
 <section id="limitations-out-of-sample" class="slide level2">

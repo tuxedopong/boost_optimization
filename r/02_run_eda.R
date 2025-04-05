@@ -94,9 +94,11 @@ ggplot(df_clean, aes(x=cumulative_boost_amount_cents/100)) + geom_histogram() + 
 ggplot(df_clean |> filter(cumulative_boost_amount_cents>0), aes(x=cumulative_boost_as_fare_pct*100)) + geom_histogram() + xlab("Cumulative Boost as a Percentage of Paid Fare (%)")
 ## Cumulative boost as % of fare paid to driver**
 ggplot(df_clean |> filter(cumulative_boost_amount_cents>0, origin_metro_area_name %in% metros_top6), aes(x=cumulative_boost_as_fare_pct*100)) + 
-  geom_histogram() + facet_wrap(~origin_metro_area_name) +
+  geom_histogram() + facet_wrap(~origin_metro_area_name) + #fill=factor(time_between_claimed_scheduled_h)
   xlab("Cumulative Boost as Driver's Fare Percentage (%), selected metro areas")
-
+ggplot(df_clean |> filter(cumulative_boost_amount_cents>0, origin_metro_area_name %in% metros_top6), aes(x=cumulative_boost_as_fare_pct*100)) + 
+  geom_histogram(aes(fill=factor(ever_unclaimed))) + facet_wrap(~origin_metro_area_name) +
+  xlab("Cumulative Boost as Driver's Fare Percentage (%), selected metro areas")
 
 ## Boolean vars: trip during peak hours, received more than one boost, or was ever unclaimed (before being re-claimed later on)
 ggplot(df_clean, aes(x=trip_starts_during_peak_hours)) + geom_bar()
