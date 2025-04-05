@@ -22,9 +22,9 @@ metros_top6 = c("Orlando Metro", "DFW", "Sacramento Metro", "Greensboro Metro", 
 
 The current strategy of augmenting base fares with incentives is inefficient on two fronts:
 
--   It costs our teams valuable time to manually intervene in the marketplace, AKA "boosting"
+-   It costs our teams valuable time to manually intervene in the marketplace, i.e. "boosting"
 
--   Boosting trips is expensive! As we try to guarantee every ride, costs accumulate on unclaimed rides leading up to the scheduled trip
+-   Boosting trips is expensive! As we try to guarantee every ride, boost costs can accumulate on unclaimed rides leading up to their scheduled start
 
 ## The Problem (don't panic)
 
@@ -51,9 +51,9 @@ We can do better than that!
 
 **In 2024, we boosted 42.7% of all completed trips (17,500)**
 
--   Between May - August, the company paid out \$430k to drivers
+-   In May - August, the company paid \$430k to drivers
 
--   The avg. trip was 21 minutes; avg. fare was \$25
+-   The avg. trip was 21 minutes; the avg. fare was \$25
 
 -   We spent \$92k on boosting, or \$5.27 per trip (21% of fares)
 
@@ -71,17 +71,17 @@ ggplot(df_clean, aes(x=dollars_paid_to_driver)) + geom_histogram() + xlab("Fare 
 
 ## The Data
 
-Looking closely at the timeline of driver claims versus trips' scheduled start...
+Let's zoom in on the timeline of driver claims versus scheduled start times
 
 ```{r}
 ggplot(df_clean, aes(x=time_between_claimed_scheduled_h*-1)) + geom_histogram() + xlab("Time between a claimed trip and its scheduled start, in hours")
 ```
 
--   Many trips are claimed weeks in advance, but some just days or hours before. A third (33.2%) of trips remain unclaimed an hour before pick-up!
+-   Many trips are claimed several weeks or days in advance, but some just hours before. A third (33.2%) of trips remained unclaimed an hour before pick-up!
 
 ## The Data (features)
 
-We know **fares, boosts, claimed/scheduled ride times**, and have also collected information on:
+Beyond **fares, boosts, claimed/scheduled ride times**, we have also collected information on:
 
 -   **Peak traffic hours**
 
@@ -89,20 +89,21 @@ We know **fares, boosts, claimed/scheduled ride times**, and have also collected
 
 -   **Boosts expressed as a percentage of fares**
 
--   **Count of trips by origin metro area**, monthly (demand proxy)
+-   **\# of trips by origin metro area**, monthly (demand proxy)
 
 -   **Average commute time to pick-up by metro area**, also monthly (sparsity proxy)
 
 ## Behold, a solution: Identifying high-risk rides early
 
-My solution involves using a predictive model to automatically flag rides days in advance, particularly those at risk of needing a last-minute intervention
+I propose leveraging a predictive model to automatically flag rides many days in advance, particularly those likely to require a last-minute intervention
 
 -   **Key Question:** will the requisite data become available ahead of each trip's scheduled date?
--   If we can probabilistically identify rides that are most likely to remain unclaimed until late, we can promote them on the platform early – saving on last-minute boosting.
+-   If we can probabilistically identify rides at high risk of remaining unclaimed, we can promote them on the platform early – saving on last-minute boosting
+    -   A quarter of overall boost spend happens in the final hour
 
 ## A model-based approach to the business problem
 
-In developing a model, we have three high-level strategic goals:
+In developing a model, we seek to balance three high-level strategic goals:
 
 -   **Reducing** the manual workload on boost ops teams as much as possible
 -   **Maintaining** the high standard of scheduled trip reliability and guaranteed rides
@@ -110,11 +111,11 @@ In developing a model, we have three high-level strategic goals:
 
 ## A model-based approach to the business problem
 
-I fit a predictive model to measure the extent to which our data inputs influenced each claimed trip's timeline
+I fit a predictive model to measure the extent to which our input features influenced each trip's timeline
+
+-   Specifically, what is the relationship between our variables of interest and the time until a trip gets claimed (relative to its scheduled start), in hours?
 
 -   Let's start with a relatively simple linear model (GLM)
-
--   Specifically, what is the relationship between our features and the time between a trip getting claimed relative to its scheduled start, in hours?
 
 ## The Model: How the sausage is made
 
@@ -135,9 +136,9 @@ ggplot(df_clean, aes(x = residuals)) + geom_histogram(bins = 30) + xlab("Residua
 
 -   On the plus side, residuals are centered on zero (mu = 0.003)
 
--   Yet, we observe an asymmetric distribution and a high standard deviation among residuals (sd = 149 h), suggesting distributional assumptions are not holding up
+-   Yet, we observe an asymmetric distribution and a high standard deviation among residuals (sd = 149 h), suggesting distributional assumptions don't hold up
 
--   In brief, my toy model's fit and performance leave much to be desired
+-   In brief, my toy model's fit and performance are lackluster
 
 ## The Model: A technical detour
 
@@ -147,13 +148,13 @@ ggplot(df_clean, aes(x=log1p(time_between_claimed_scheduled_h))) + geom_histogra
 
 -   During the modeling phase, I specified a log link function for the outcome variable
 
--   It was insufficient to accommodate this degree of non-normality, evidenced by the right-skew
+-   It was insufficient to accommodate the degree of non-normality, evidenced by this right-skew
 
 ## The Model: A technical detour
 
--   A modeling approach requires an understanding of the data-generating process, defining and checking for the influence of outliers, and iterating on the implementation details
+-   A modeling approach requires an understanding of the data-generating process, checking for the influence of outliers, and iterating on the implementation details
 
--   If this were a real deliverable, we would consider:
+-   If this were a real-world deliverable, we would consider:
 
     -   A different family of continuous distributions to model the problem, or
 
@@ -165,13 +166,13 @@ ggplot(df_clean, aes(x=log1p(time_between_claimed_scheduled_h))) + geom_histogra
 
 Despite the toy model's shortcomings, this framework remains useful for making actionable recommendations. Controlling for the input variables, and all else being equal, some insights:
 
--   Longer rides are likely to get claimed earlier
+-   **Longer rides are likely to get claimed earlier**
 
--   Both higher fare rides and peak hour trips tend to get claimed later
+-   **High boosts** (by % of fare) are **strongly associated** with late trip claims
 
--   High boosts (by % of fare) are strongly associated with late trip claims
+-   Higher fare and peak hour trips tend to get claimed later
 
--   Both geographic-level features tracking monthly rides & commute times are modestly associated with later claims
+-   Both geographic-level features tracking monthly rides & commute times are modestly related to later claims
 
 ## Toy model deployment
 
@@ -186,7 +187,7 @@ If we were satisfied with model fit and diagnostics, I'd work on deploying it wi
 
 Embracing a hybrid predictive and prescriptive framework, my business recommendations include:
 
--   **Incentivizing drivers early** with a probabilistic, automated boosting system, leveraging the model
+-   **Incentivizing drivers early** with a probabilistic, automated boosting system, based on the model
 -   **Offering** **boosts as a percentage of total fare**, to minimize the need for incremental boosts
 -   Making incentives proportional to trips' predicted risk of remaining unclaimed until late
 
@@ -195,28 +196,28 @@ Embracing a hybrid predictive and prescriptive framework, my business recommenda
 Following a recommendations testing framework, we should also consider:
 
 -   **Highlighting above-average boosts** in the app when they're offered days in advance
--   **Adding an "early claim" bonus** for drivers, e.g. every five rides claimed 8+ hours early
+-   **Adding an "early claim" bonus** for drivers, e.g. every five trips claimed 8+ hours early
 -   **Designing a set of experiments** to understand how all our proposed changes will interact
 
 ## Business Impact (if you read 1 slide)
 
--   **Same-day boosting costs the business \$5.27 per trip**, on average
+-   Same-day boosting costs \$5.27 per trip, on average
 
     -   A quarter of boosts (\$\$) happen within an hour of the pick-up window!
 
 -   Using predictive modeling, **we can identify rides that might be left unclaimed** weeks in advance
 
--   **Automating early boosting for these trips will save the business time and money**
+-   Automating early boosting would save both time and money
 
     -   A modest 19% reduction in average boost spend works out to \$53k/yr (of \$280k in boosts)
 
-    -   Put another way, **a boost reduction of \$1 per \$25 trip saves us 4% on every fare**
+    -   Put another way, **a boost reduction of \$1 per \$25 trip saves the business 4% on every fare**
 
 ## If only we had more data...
 
 While this is fine for a POC, we could really use more data:
 
--   **More trips** – we're clearly working with a small sample here
+-   **More trips** – we're clearly working with a small sample
 -   Competitive **pricing benchmarks** from other transportation networks, by metro area
 -   Twelve or more months of **historical data for seasonality** & cyclicality estimates
 -   **Canceled and rescheduled trips** (or those we couldn't guarantee), another form of risk
@@ -228,13 +229,13 @@ Data aren't the only limiting factor. My approach makes several key assumptions:
 
 -   The framework **assumes data inputs would be available early enough for the information to make a difference** for the business, well before same-day boost ops kicks in
 
--   We're assuming knowledge on fares paid to drivers ahead of time. Shifts in the predicted trip length/duration could systematically impact model results
+-   We're also **assuming knowledge on fares paid to drivers** ahead of time. Shifts in the predicted trip length/duration could systematically impact model results
 
--   **YMMV**: we need a way to quantify and track the value-add for the business once implementated
+-   **YMMV**: we need a framework for quantifying and tracking the value-add once implementated
 
 ## Limitations ("out-of-sample")
 
--   We've operated based on "within-sample" data, and want to understand how well results would generalize to other times of the year, metro areas, and future trips in general
+-   We've operated based on "within-sample" data, and wish to understand how well results would generalize to other times of the year, geographic regions, and future trips in general
 
     -   We can run K-fold cross validation (e.g. 10 splits), ideally with a full year's worth of data
 
