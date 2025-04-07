@@ -29,7 +29,7 @@ df_clean = df_clean |> mutate(predicted = predict(fit1, df_clean)$.pred,
                                residuals = time_between_claimed_scheduled_h - predicted)
 df_clean |> summarise(mean_resid = mean(residuals), sd_resid = sd(residuals)) |> print()
 
-# Residuals plots, check for asymmetry and heteroskedasticity
+# Residuals plots, check for asymmetry and heteroskedasticity**
 # ggplot(df_clean, aes(x = residuals)) + geom_histogram() + xlab("Residuals") + ylab("")
 # ggplot(df_clean, aes(x = predicted, y = residuals)) + 
 #   geom_point() + 

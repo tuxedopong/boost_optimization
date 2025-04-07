@@ -11,7 +11,7 @@
   <meta name="generator" content="quarto-1.5.57">
 
   <meta name="author" content="Felipe Osorio">
-  <meta name="dcterms.date" content="2025-04-04">
+  <meta name="dcterms.date" content="2025-04-07">
   <title>Marketplace Boost Optimization Engine</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -337,7 +337,7 @@ Felipe Osorio
 </div>
 </div>
 
-  <p class="date">2025-04-04</p>
+  <p class="date">2025-04-07</p>
 </section>
 <section id="the-problem" class="slide level2">
 <h2>The Problem</h2>
@@ -504,7 +504,7 @@ Residual Deviance: 388200000    AIC: 224600
 </section>
 <section id="toy-model-deployment" class="slide level2">
 <h2>Toy model deployment</h2>
-<p>If we were satisfied with model fit and diagnostics, I’d work on deploying it with the MLOps team, with the following principles in mind:</p>
+<p>If we were satisfied with model fit and diagnostics, we’d want to deploy it with the following principles in mind:</p>
 <ul>
 <li><strong>Modularity</strong>: each component of the modeling pipeline should be easy to maintain/improve</li>
 <li><strong>Efficiency</strong>: minimize tech debt, ci/cd build times, and model run-time for scaling out</li>
@@ -533,12 +533,12 @@ Residual Deviance: 388200000    AIC: 224600
 <section id="business-impact-if-you-read-1-slide" class="slide level2">
 <h2>Business Impact (if you read 1 slide)</h2>
 <ul>
-<li><p>Same-day boosting costs $5.27 per trip, on average</p>
+<li><p>Same-day boosting <strong>costs $5.27 per trip</strong>, on average</p>
 <ul>
-<li>A quarter of boosts ($$) happen within an hour of the pick-up window!</li>
+<li>A quarter of boost spend ($$) happens within an hour of the pick-up window!</li>
 </ul></li>
-<li><p>Using predictive modeling, <strong>we can identify rides that might be left unclaimed</strong> weeks in advance</p></li>
-<li><p>Automating early boosting for these trips will save both time and money</p>
+<li><p>Using predictive modeling, <strong>we can identify rides likely to be left unclaimed</strong> weeks in advance</p></li>
+<li><p>Automating early boosting would save both time and money</p>
 <ul>
 <li><p>A modest 19% reduction in average boost spend works out to $53k/yr (of $280k in boosts)</p></li>
 <li><p>Put another way, <strong>a boost reduction of $1 per $25 trip saves the business 4% on every fare</strong></p></li>
@@ -565,8 +565,8 @@ Residual Deviance: 388200000    AIC: 224600
 <li><p><strong>YMMV</strong>: we need a framework for quantifying and tracking the value-add once implementated</p></li>
 </ul>
 </section>
-<section id="limitations-out-of-sample" class="slide level2">
-<h2>Limitations (“out-of-sample”)</h2>
+<section id="limitations-generalizability" class="slide level2">
+<h2>Limitations (generalizability)</h2>
 <ul>
 <li><p>We’ve operated based on “within-sample” data, and wish to understand how well results would generalize to other times of the year, geographic regions, and future trips in general</p>
 <ul>
@@ -576,14 +576,14 @@ Residual Deviance: 388200000    AIC: 224600
 <li><p>In the future, we may consider a time-to-event (i.e.&nbsp;survival analysis) or zero-inflated overdispersion model, such as a negative binomial HLM (using <code>rstan</code>) to predict trip claims</p></li>
 </ul>
 </section>
-<section id="section" class="slide level2">
-<h2></h2>
+<section id="thank-you" class="slide level2 center">
+<h2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Thank you!</h2>
+</section>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 
 </div>
 </div>
-</section>
     </div>
   </div>
 
